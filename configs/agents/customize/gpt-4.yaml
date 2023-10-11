@@ -1,0 +1,14 @@
+module: src.agents.HTTPAgent
+parameters:
+  body:
+    model: gpt-4
+  headers:
+    Authorization: Bearer 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
+    Content-Type: application/json
+  name: gpt-4
+  prompter:
+    args:
+      agent_role: assistant
+    name: role_content_dict
+  return_format: "{response[choices][0][message][content]}"
+  url: https://api.openai.com/v1/chat/completions

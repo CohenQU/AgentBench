@@ -388,35 +388,35 @@ class OSInteraction(Task):
         if config.start:
             container.execute(config.start[1])
 
-        def get_answer():
+        def add_instructions():
             oneshot = True
             session.inject({
                 "role": "user",
                 "content": """You are an assistant that will act like a person, I'will play the role of linux(ubuntu) operating system. Your goal is to implement the operations required by me or answer to the question proposed by me. For each of your turn, you should first think what you should do, and then take exact one of the three actions: "bash", "finish" or "answer". 
 
-1. If you think you should execute some bash code, take bash action, and you should print like this:
+                1. If you think you should execute some bash code, take bash action, and you should print like this:
 
-Think: put your thought here.
+                Think: put your thought here.
 
-Act: bash
+                Act: bash
 
-```bash
-# put your bash code here
-```
+                ```bash
+                # put your bash code here
+                ```
 
-2. If you think you have finished the task, take finish action, and you should print like this:
+                2. If you think you have finished the task, take finish action, and you should print like this:
 
-Think: put your thought here.
+                Think: put your thought here.
 
-Act: finish
+                Act: finish
 
-3. If you think you have got the answer to the question, take answer action, and you should print like this:
+                3. If you think you have got the answer to the question, take answer action, and you should print like this:
 
-Think: put your thought here.
+                Think: put your thought here.
 
-Act: answer(Your answer to the question should be put in this pair of parentheses)
+                Act: answer(Your answer to the question should be put in this pair of parentheses)
 
-If the output is too long, I will truncate it. The truncated output is not complete. You have to deal with the truncating problem by yourself. Attention, your bash code should not contain any input operation. Once again, you should take only exact one of the three actions in each turn.\n\n"""
+                If the output is too long, I will truncate it. The truncated output is not complete. You have to deal with the truncating problem by yourself. Attention, your bash code should not contain any input operation. Once again, you should take only exact one of the three actions in each turn.\n\n"""
             })
             
             if not oneshot:
@@ -426,18 +426,13 @@ If the output is too long, I will truncate it. The truncated output is not compl
                 session.history.extend(ONE_SHOT[1:])
                 session.inject({"role": "user", "content": "Now, I will start a new problem in a new OS. My problem is:\n\n" + config.description}) 
             
-            for _ in range(self.round_limit):
-                try:
-                    root = session.action()
-                    root = self.extract_action(root)
-                    # print(root)
-                except Exception as e:
-                    # print("Error", str(e), traceback.format_exc(), sep=" | ")
-                    return
-                if "action" not in root or root["action"] not in ["bash", "commit"]:
-                    # print("Error", "Invalid Action Field", traceback.format_exc(), sep=" | ")
-                    return
-
+        def get_answer():
+            try:
+                root = session.action()
+                root = self.extract_action(root)
+                if len(session.history) > 1:
+                    print(session.history[-2]["content"])
+                print(root)
                 action = root["action"]
                 content = root["content"]
                 if action == "commit":
@@ -450,27 +445,75 @@ If the output is too long, I will truncate it. The truncated output is not compl
                         "role": "user",
                         "content": ("The output of the OS:\n\n" + result) if result else "The output of the OS is empty."
                     })
-        answer = get_answer()
+                    return None
+                
+            except Exception as e:
+                # print("Error", str(e), traceback.format_exc(), sep=" | ")
+                error_msg = traceback.format_exc()
+                session.inject({
+                    "role": "user",
+                    "content": "Your response leads to the following error:\n\n" + error_msg + "\n\nCan you try it again?"
+                })
+                return None
+            if "action" not in root or root["action"] not in ["bash", "commit"]:
+                # print("Error", "Invalid Action Field", traceback.format_exc(), sep=" | ")
+                session.inject({
+                    "role": "user",
+                    "content": "The action field in your response is invalid, can you try it again?"
+                })
+                return None
 
-        if isinstance(answer, str) and config.match and config.match["strip"]:
-            answer = answer.strip()
+            
+                    # print(("Benchmark: The output of the OS:\n\n" + result) if result else "The output of the OS is empty.")
+        add_instructions()
 
-        if config.match:
-            if "answer" in config.match:
-                return answer == config.match["answer"]
-            elif "regex" in config.match:
-                return re.search(config.match["regex"], answer) is not None
-        elif config.check:
-            params = [str(answer)]
-            for script in config.check:
-                if script is None:
-                    script = config.example_script
-                response = container.execute_independent(script, *params)
-                # print("OUTPUT", response.output.decode("utf-8"))
-                # print("RETURN", response.exit_code)
-                if response.exit_code != 0:
-                    return False
-                params.append(response.output.decode("utf-8"))
-            return True
-        else:
-            raise Exception("Invalid evaluation_type in config")
+        for _ in range(self.round_limit):
+            answer = get_answer()
+            if answer is None:
+                continue
+            else:
+                if isinstance(answer, str) and config.match and config.match["strip"]:
+                    answer = answer.strip()
+
+                if config.match:
+                    if "answer" in config.match:
+                        if answer == config.match["answer"]:
+                            return True
+                        else:
+                            session.inject({
+                                "role": "user",
+                                "content": "Your answer is wrong, can you try it again?"
+                            })
+                            continue
+                    elif "regex" in config.match:
+                        if re.search(config.match["regex"], answer) is not None:
+                            return True
+                        else:
+                            session.inject({
+                                "role": "user",
+                                "content": "Your answer is wrong, can you try it again?"
+                            })
+                            continue
+                elif config.check:
+                    params = [str(answer)]
+                    is_pass = True
+                    for script in config.check:
+                        if script is None:
+                            script = config.example_script
+                        response = container.execute_independent(script, *params)
+                        # print("OUTPUT", response.output.decode("utf-8"))
+                        # print("RETURN", response.exit_code)
+                        if response.exit_code != 0:
+                            session.inject({
+                                "role": "user",
+                                "content": "Your answer is wrong, can you try it again?"
+                            })
+                            is_pass = False
+                            break  
+                        params.append(response.output.decode("utf-8"))
+                    if is_pass:
+                        return True
+                else:
+                    print("AgentBench Implementation Error")
+                    raise Exception("Invalid evaluation_type in config")
+        return False

@@ -1,0 +1,266 @@
+[
+  {
+    "description": "If a regular file named \"workspace\" exists in /working (recursively)? If so, output \"yes\", otherwise output \"no\" (with out quotes).",
+    "create": {
+      "local": "default",
+      "init": "rm -rf /working; mkdir /working && echo 123>/working/.tmp && echo 123>/working/.tm12p && echo 123>/working/.f && mkdir /working/OS && echo 'OS' > /working/OS/.theme"
+    },
+    "evaluation": {
+      "match": "no"
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "If a regular file named \"workspace\" exists in /working (recursively)? If so, output \"yes\", otherwise output \"no\" (with out quotes).",
+    "create": {
+      "local": "default",
+      "init": "rm -rf /working; mkdir /working && echo 123>/working/.tmp && echo 123>/working/.tm12p && echo 123>/working/.f && mkdir /working/OS && echo 'OS' > /working/OS/.theme && mkdir /working/OS/workspace"
+    },
+    "evaluation": {
+      "match": "no"
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "If a regular file named \"workspace\" exists in /working (recursively)? If so, output \"yes\", otherwise output \"no\" (with out quotes).",
+    "create": {
+      "local": "default",
+      "init": "rm -rf /working; mkdir /working && echo 123>/working/.tmp && echo 123>/working/.tm12p && echo 123>/working/.f && mkdir /working/OS && echo 'OS' > /working/OS/.theme && touch /working/OS/workspace"
+    },
+    "evaluation": {
+      "match": "yes"
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "execute ~/test and get the output.",
+    "start": "useradd -s /bin/bash -d /home/jack -m jack && cd /home/jack && echo 'echo love' > test && chmod 000 test && chown jack test && su - jack",
+    "evaluation": {
+      "match": "love",
+      "example": {
+        "code": "chmod 777 test && ~/test"
+      }
+    },
+    "labels": ["permission", "user"]
+  },
+  {
+    "description": "How many hidden files, which do not contain the character u, are in /usr? (not recursively)",
+    "create": {
+      "local": "default",
+      "init": "echo 123>/usr/.tmp\necho 123>/usr/tmp2\necho 123>/usr/.tm12p\necho 123>/usr/.f\necho 123>/usr/.u\necho 123>/usr/k\n"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "find /usr -type f -name \".*\" -not -name \"*k*\"  | wc -l"
+      }
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "What's the full path of a file \"TOOLS\"?",
+    "create": {
+      "local": "default",
+      "init": "echo 123>/usr/TOOLS"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/string-match.py"
+        }
+      ],
+      "example": "find / -name TOOLS"
+    },
+    "labels": ["path", "file"]
+  },
+  {
+    "description": "What is the total number of files in the /var directory? (recursively)",
+    "create": {
+      "local": "default",
+      "init": "echo 123321>/var/tmp.log && echo 123321>/var/dsdd && echo 123321>/var/ppoo && echo 123321>/var/gdss && echo 123321>/var/itcs && echo 123321>/var/ksmx"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "find /var -type f | wc -l"
+      }
+    },
+    "labels": ["command", "file"]
+  },
+  {
+    "description": "How many lines are there in /root/matrix.txt",
+    "create": {
+      "local": "default",
+      "init": "echo \"1 2 3\n4 5 6\n7 8 9\" > /root/matrix.txt"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "cat /root/matrix.txt | wc -l"
+      }
+    },
+    "labels": ["command", "file"]
+  },
+  {
+    "description": "How many default paths are looked for when I execute an executable on this computer? (Regardless of whether the path exists or not.)",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; echo $PATH | tr ':' '\\n' | wc -l"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "How many default paths are looked for when I execute an executable on this computer? (Only existing and valid directories)",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc && mkdir /var/k"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; count=0; IFS=:; for path in $PATH; do [ -d \"$path\" ] && ((count++)); done; echo $count"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "How many default paths are looked for when I execute an executable on this computer? (Only existing and valid directories)",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc && mkdir /var/k && touch /var/l"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; count=0; IFS=:; for path in $PATH; do [ -d \"$path\" ] && ((count++)); done; echo $count"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "How many paths are in $PATH? (Regardless of whether the path exists or not.)",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; echo $PATH | tr ':' '\\n' | wc -l"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "How many existing directories are in $PATH?",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc && mkdir /var/k"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; count=0; IFS=:; for path in $PATH; do [ -d \"$path\" ] && ((count++)); done; echo $count"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "Move the file MyPersonalComputer.config to current directory. And tell me the path of the file before copying.",
+    "create": {
+      "local": "default",
+      "init": "mkdir /home/user1 && mkdir /home/user1/os && mkdir /home/user1/os/linux && mkdir /home/user1/os/linux/commands && echo 'Linux-Ubuntu-20.04?' > /home/user1/os/linux/commands/MyPersonalComputer.config"
+    },
+    "start": "mkdir /home/user2 && cd /home/user2",
+    "evaluation": {
+      "check": [
+        {
+          "language": "python",
+          "code": "from sys import argv\nassert argv[1].strip()=='/home/user1/os/linux/commands/MyPersonalComputer.config'"
+        },
+        {
+          "language": "bash",
+          "code": "find /home/user1/os/linux/commands/MyPersonalComputer.config >/dev/null 2>/dev/null && exit 1 || exit 0"
+        },
+        {
+          "language": "bash",
+          "code": "find /home/user2/MyPersonalComputer.config >/dev/null 2>/dev/null && exit 0 || exit 1"
+        }
+      ],
+      "example": {
+        "code": "mv /home/user1/os/linux/commands/MyPersonalComputer.config /home/user2/ && echo /home/user1/os/linux/commands/MyPersonalComputer.config"
+      }
+    },
+    "labels": ["path", "files"]
+  },
+  {
+    "description": "Test if variable var is an integer? If so, tell me \"yes\", otherwise tell me \"no\". (Without quotes)",
+    "create": {
+      "local": "default"
+    },
+    "start": "var=3.14",
+    "evaluation": {
+      "match": "no",
+      "example": {
+        "code": "test \"$var\" -eq \"$var\" 2>/dev/null && echo \"yes\" || echo \"no\""
+      }
+    },
+    "labels": ["command", "variables"]
+  }
+]

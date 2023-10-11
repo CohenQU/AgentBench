@@ -1,0 +1,24 @@
+[
+  {
+    "description": "Stock logs are shown in /usr/stock.log. The last two columns are stock index and count. Find the stock index with the highest count of transactions (combined purchases and sales).",
+    "create": {
+      "local": "default",
+      "init": {
+        "file": "init/stock-log.sh"
+      }
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/string-match.py"
+        }
+      ],
+      "example": {
+        "code": "awk -F '|' '{a[$3]++} END {max=0; for (stock in a) {if (a[stock] > max) {max = a[stock]; stockIndex = stock}} print stockIndex}' /usr/stock.log"
+      }
+    },
+    "labels": ["log", "file"]
+  }
+]

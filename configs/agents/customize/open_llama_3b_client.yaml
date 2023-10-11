@@ -1,0 +1,10 @@
+# Refer to https://github.com/lm-sys/FastChat to know how to deploy FastChat service
+
+module: "src.agents.FastChatAgent"
+parameters:
+  name: "open_llama_3b"
+  model_name: "open_llama_3b_v2"
+  controller_address: http://localhost:21002
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 1

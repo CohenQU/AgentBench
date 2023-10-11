@@ -1,0 +1,24 @@
+[
+  {
+    "description": "How many files in /usr (recursively) were modified in the last 24 hours?",
+    "create": {
+      "local": "default",
+      "init": {
+        "code": "echo \"This is a random string: wuafjva-niqt12r-j9asd19-afj12-sdmxai\">/usr/OSbench\ntouch /usr/tmpfile\nmkdir /usr/tmpdir\ntouch /usr/tmpdir/inner"
+      }
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "find /usr -type f -mtime -1 | wc -l"
+      }
+    },
+    "labels": ["file"]
+  }
+]

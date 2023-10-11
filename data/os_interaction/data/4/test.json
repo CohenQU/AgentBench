@@ -1,0 +1,67 @@
+[
+  {
+    "description": "If a regular file named \"workspace\" exists in /working (recursively)? If so, output \"yes\", otherwise output \"no\" (with out quotes).",
+    "create": {
+      "local": "default",
+      "init": "rm -rf /working; mkdir /working && echo 123>/working/.tmp && echo 123>/working/.tm12p && echo 123>/working/.f && mkdir /working/OS && echo 'OS' > /working/OS/.theme && touch /working/workspace"
+    },
+    "evaluation": {
+      "match": "yes"
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "Get the name of most recent file in /usr. (not recursively)",
+    "create": {
+      "local": "default",
+      "init": "i=1; while [ $i -lt 100 ]; do echo \"Content: $((i * 2 % 3))\" > \"/usr/$(( (i+50)%100 )).log\"; i=$((i+1)); done"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/string-match.py"
+        }
+      ],
+      "example": {
+        "code": "ls -lt /usr | head -n 2 | tail -n 1 | awk '{print $9}'"
+      }
+    },
+    "labels": ["file"]
+  },
+  {
+    "description": "How many existing directories are in $PATH?",
+    "create": {
+      "local": "default",
+      "init": "echo 'export PATH=$PATH:/var/k && export PATH=$PATH:/var/l && export PATH=$PATH:/var/p' > ~/.bashrc && mkdir /var/k && touch /var/l"
+    },
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/integer-match.py"
+        }
+      ],
+      "example": {
+        "code": "source ~/.bashrc; count=0; IFS=:; for path in $PATH; do [ -d \"$path\" ] && ((count++)); done; echo $count"
+      }
+    },
+    "labels": ["command", "variables"]
+  },
+  {
+    "description": "Test if variable var is an integer? If so, tell me \"yes\", otherwise tell me \"no\". (Without quotes)",
+    "create": {
+      "local": "default"
+    },
+    "start": "var=10",
+    "evaluation": {
+      "match": "yes",
+      "example": {
+        "code": "test \"$var\" -eq \"$var\" 2>/dev/null && echo \"yes\" || echo \"no\""
+      }
+    },
+    "labels": ["command", "variables"]
+  }
+]

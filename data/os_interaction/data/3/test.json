@@ -1,0 +1,16 @@
+[
+  {
+    "description": "Tell me the max number of threads in Linux.",
+    "evaluation": {
+      "check": [
+        null,
+        {
+          "language": "python",
+          "file": "check/string-match.py"
+        }
+      ],
+      "example": "cat /proc/sys/kernel/threads-max"
+    },
+    "labels": ["command", "file"]
+  }
+]
